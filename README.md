@@ -60,4 +60,4 @@ License
 This project is licensed under the MIT License.
 
 Author   
-Liyo C Raju – 
+Liyo C Raju – Data Science & AI enthusiast
