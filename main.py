@@ -7,13 +7,15 @@ import yfinance as yf
 from prophet import Prophet
 from prophet.plot import plot_plotly
 from plotly import graph_objs as go
+import pandas as pd
+
 
 START = "2015-01-01"
 TODAY = date.today().strftime("%Y-%m-%d")
 
 st.title('Stock Forecast App')
 
-stocks = ('GOOG', 'AAPL', 'MSFT', 'GME','TATASTEEL.NS')
+stocks = ('GOOG', 'AAPL', 'MSFT','TATASTEEL.NS','TSLA','AMZN','NFLX','META','NVDA')
 selected_stock = st.selectbox('Select dataset for prediction', stocks)
 
 n_years = st.slider('Years of prediction:', 1, 5)
@@ -23,11 +25,17 @@ period = n_years * 365
 def load_data(ticker):
     data = yf.download(ticker, START, TODAY)
     data.reset_index(inplace=True)
+    if isinstance(data.columns, pd.MultiIndex):
+        data.columns = [col[0] if col[0] != '' else col[1] for col in data.columns]
+
     return data
 
 data_load_state = st.text('Loading data...')
 data = load_data(selected_stock)
 data_load_state.text('Loading data... done!')
+data['Open'] = pd.to_numeric(data['Open'], errors='coerce')
+data['Close'] = pd.to_numeric(data['Close'], errors='coerce')
+
 
 st.subheader('Raw data')
 st.write(data.tail())
@@ -46,6 +54,7 @@ plot_raw_data()
 # Predict forecast with Prophet
 
 df_train = data[['Date','Close']]
+df_train = df_train.dropna()
 df_train = df_train.rename(columns={"Date": "ds", "Close": "y"})
 
 m = Prophet()
